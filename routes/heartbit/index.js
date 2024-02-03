@@ -14,7 +14,7 @@ const contract = new ethers.Contract(process.env.CONTRACT_ADDRESS, abi, signer);
 
 async function main({ account, startTime, endTime, hash, data }) {
   const txn = await contract.mint(account, startTime, endTime, hash, data);
-  return { hash: txn.hash, txn };
+  return { success: true, hash: txn.hash, txn };
 }
 
 module.exports = main;

@@ -17,7 +17,7 @@ router.post('/', async function(req, res, next) {
     data: '0x00',
   }).catch((error) => {
     console.log(error);
-    return { message: 'no data' };
+    return { success: false, message: 'txn failed' };
   });
   console.log(response);
   if (response.hash) {
