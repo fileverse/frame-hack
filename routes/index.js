@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const heartbit = require('./heartbit');
-const recover = require('./ecrecover');
+const recover = require('./recover');
 
 router.get('/', function(req, res, next) {
   res.send('relayer service');
