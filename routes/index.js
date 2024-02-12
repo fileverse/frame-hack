@@ -20,16 +20,15 @@ router.post('/', async function(req, res, next) {
     console.log(error);
     return { success: false, message: 'txn failed' };
   });
-  console.log(response);
   if (response.hash) {
-    res.send(response.hash);
+    res.send({ success: true, txnHash: response.hash });
     await response.txn.wait().then((reciept) => {
       console.log('reciept.hash: ', reciept.hash);
       console.log('reciept.blockHash: ', reciept.blockHash);
       console.log('reciept.blockNumber: ', reciept.blockNumber);
     });
   } else {
-    res.send(response.message);
+    res.send({ success: false, message: response.message });
   }
 });
 
@@ -48,14 +47,14 @@ router.post('/verify', async function(req, res, next) {
   });
   console.log(response);
   if (response.hash) {
-    res.send(response.hash);
+    res.send({ success: true, txnHash: response.hash });
     await response.txn.wait().then((reciept) => {
       console.log('reciept.hash: ', reciept.hash);
       console.log('reciept.blockHash: ', reciept.blockHash);
       console.log('reciept.blockNumber: ', reciept.blockNumber);
     });
   } else {
-    res.send(response.message);
+    res.send({ success: false, message: response.message });
   }
 });
 
