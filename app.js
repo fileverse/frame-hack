@@ -17,16 +17,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 
-function auth(req, res, next) {
-  const apiKey = req.headers['x-api-key'];
-  if (apiKey === process.env.API_KEY) {
-    next();
-  } else {
-    res.status(401).send('Unauthorized');
-  }
-}
 
-app.use('/', auth, indexRouter);
+app.use('/', indexRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
