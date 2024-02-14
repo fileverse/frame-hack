@@ -60,12 +60,12 @@ router.post('/verify', async function(req, res, next) {
 });
 
 router.post('/pimlico', async function(req, res, next) {
-  const { account, startTime, endTime } = req.body;
+  const { account, startTime, endTime, hash } = req.body;
   const response = await pimlico({
     account,
     startTime,
     endTime,
-    hash: 'ipfs://QmURaqcRxLpuFkyhvsCBQPfpsC7Vruj7jhPXqYGpsp9QUE',
+    hash,
     data: '0x00',
   }).catch((error) => {
     console.log(error);
