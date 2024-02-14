@@ -5,26 +5,20 @@ const createError = require('http-errors');
 const express = require('express');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
+const cors = require('cors');
 
 const indexRouter = require('./routes/index');
 
 const app = express();
 
+app.use(cors());
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 
-function auth(req, res, next) {
-  const apiKey = req.headers['x-api-key'];
-  if (apiKey === process.env.API_KEY) {
-    next();
-  } else {
-    res.status(401).send('Unauthorized');
-  }
-}
 
-app.use('/', auth, indexRouter);
+app.use('/', indexRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
