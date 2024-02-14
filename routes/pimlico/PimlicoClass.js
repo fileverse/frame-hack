@@ -1,4 +1,6 @@
 const { createPublicClient, encodeFunctionData, http, getAddress } = require("viem");
+const { toBytes, toHex } = require("viem");
+const { generatePrivateKey } = require("viem/accounts");
 const abi = require("./abi.json");
 
 const {
@@ -102,7 +104,7 @@ class Pimlico {
       await this.smartAccountClient.prepareUserOperationRequest({
         userOperation: {
           callData, // callData is the only required field in the partial user operation
-          nonce: this.nonce++,
+          nonce: toHex(toBytes(generatePrivateKey()).slice(0, 24), { size: 32 }),
         },
         account: this.safeAccount,
       });
