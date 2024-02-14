@@ -59,7 +59,7 @@ router.post('/verify', async function(req, res, next) {
   }
 });
 
-router.post('/pimlico', async function(req, res, next) {
+router.post('/address-mint', async function(req, res, next) {
   const { account, startTime, endTime, hash } = req.body;
   const response = await pimlico({
     account,
