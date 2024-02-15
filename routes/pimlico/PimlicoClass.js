@@ -1,10 +1,11 @@
-const { createPublicClient, createClient, encodeFunctionData, http, getAddress } = require("viem");
+const { createPublicClient, encodeFunctionData, http } = require("viem");
 const { toBytes, toHex } = require("viem");
 const { generatePrivateKey } = require("viem/accounts");
 const abi = require("./abi.json");
 
 const {
   createPimlicoPaymasterClient,
+  createPimlicoBundlerClient,
 } = require("permissionless/clients/pimlico");
 
 const { privateKeyToSafeSmartAccount } = require("permissionless/accounts");
@@ -51,12 +52,9 @@ class Pimlico {
       transport: http(this.paymasterUrl),
     });
 
-    this.bundlerClient = createClient({
+    this.bundlerClient = createPimlicoBundlerClient({
       transport: http(this.bundlerUrl),
-      chain: this.chain,
     })
-      .extend(bundlerActions)
-      .extend(pimlicoBundlerActions);
 
     this.publicClient = createPublicClient({
       transport: http(this.rpcUrl),
@@ -107,14 +105,14 @@ class Pimlico {
       endTime,
       hash,
     });
-    const gasPrice = this.bundlerClient.getGasPrice();
+    const gasPrices = await this.bundlerClient.getUserOperationGasPrice();
     const userOperation =
       await this.smartAccountClient.prepareUserOperationRequest({
         userOperation: {
           callData, // callData is the only required field in the partial user operation
           nonce: toHex(toBytes(generatePrivateKey()).slice(0, 24), { size: 32 }),
-          maxFeePerGas: gasPrice.fast.maxFeePerGas,
-	        maxPriorityFeePerGas: gasPrice.fast.maxPriorityFeePerGas,
+          maxFeePerGas: gasPrices.fast.maxFeePerGas, // if using Pimlico
+          maxPriorityFeePerGas: gasPrices.fast.maxPriorityFeePerGas, // if using Pimlico
         },
         account: this.safeAccount,
       });
