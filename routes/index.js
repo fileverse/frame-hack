@@ -93,8 +93,8 @@ router.post('/signed-mint', async function (req, res) {
     console.log(error);
     return { success: false, message: 'txn failed' };
   });
-  if (response.hash) {
-    res.send({ success: true, txnHash: response.hash });
+  if (response.success) {
+    res.send({ success: true, txnHash: response.hash, userOpHash: response.userOpHash });
   } else {
     res.send({ success: false, message: response.message });
   }

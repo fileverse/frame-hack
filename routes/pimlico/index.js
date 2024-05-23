@@ -12,9 +12,9 @@ async function mint({ account, startTime, endTime, hash }) {
 }
 
 async function signedMint({ signature, message, startTime, endTime, hash }) {
-  const txnHash = await pimlico.signedMint({ signature, message, startTime, endTime, hash });
-  console.log('signedMing got txnHash: ', txnHash);
-  return { success: true, hash: txnHash };
+  const userOpHash = await pimlico.signedMint({ signature, message, startTime, endTime, hash });
+  console.log('signedMint got userOpHash: ', userOpHash);
+  return { success: true, hash: "", userOpHash };
 
 }
 
