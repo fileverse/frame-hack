@@ -3,14 +3,14 @@ const router = express.Router();
 const heartbit = require('./heartbit');
 const recover = require('./recover');
 const auth = require('../middleware/auth');
-const pimlico = require('./pimlico');
+const PIMLICO = require('./pimlico');
 
-router.get('/', function(req, res, next) {
+router.get('/', function (req, res, next) {
   res.send('relayer service');
 });
 
 
-router.post('/', auth, async function(req, res, next) {
+router.post('/', auth, async function (req, res, next) {
   const { account, startTime, endTime } = req.body;
   const response = await heartbit({
     account,
@@ -34,7 +34,7 @@ router.post('/', auth, async function(req, res, next) {
   }
 });
 
-router.post('/verify', async function(req, res, next) {
+router.post('/verify', async function (req, res, next) {
   const { message, signature, startTime, endTime, hash } = req.body;
   const { address } = await recover({ message, signature })
   const response = await heartbit({
@@ -60,9 +60,9 @@ router.post('/verify', async function(req, res, next) {
   }
 });
 
-router.post('/address-mint', async function(req, res, next) {
+router.post('/address-mint', async function (req, res, next) {
   const { account, startTime, endTime, hash } = req.body;
-  const response = await pimlico({
+  const response = await PIMLICO.mint({
     account,
     startTime,
     endTime,
@@ -78,5 +78,27 @@ router.post('/address-mint', async function(req, res, next) {
     res.send({ success: false, message: response.message });
   }
 });
+
+router.post('/signed-mint', async function (req, res) {
+  const { message, signature, startTime, endTime, hash } = req.body;
+
+  const response = await PIMLICO.signedMint({
+    message,
+    signature,
+    startTime,
+    endTime,
+    hash,
+    data: '0x00',
+  }).catch((error) => {
+    console.log(error);
+    return { success: false, message: 'txn failed' };
+  });
+  if (response.hash) {
+    res.send({ success: true, txnHash: response.hash });
+  } else {
+    res.send({ success: false, message: response.message });
+  }
+});
+
 
 module.exports = router;

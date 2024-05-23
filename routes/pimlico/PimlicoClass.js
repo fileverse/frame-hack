@@ -3,6 +3,8 @@ const { toBytes, toHex } = require("viem");
 const { generatePrivateKey } = require("viem/accounts");
 const abi = require("./abi.json");
 
+const { ethers } = require('ethers');
+
 const {
   createPimlicoPaymasterClient,
   createPimlicoBundlerClient,
@@ -23,13 +25,14 @@ const supportedChains = {
 };
 
 function resolveViemChainInstance(chain) {
-  if (chain === supportedChains.SEPOLIA) {
-    return sepolia;
+  switch (chain) {
+    case supportedChains.SEPOLIA:
+      return sepolia;
+    case supportedChains.BASE:
+      return base;
+    default:
+      return null;
   }
-  if (chain === supportedChains.BASE) {
-    return base;
-  }
-  return null;
 }
 
 class Pimlico {
@@ -68,13 +71,13 @@ class Pimlico {
     });
     this.nonce = await getAccountNonce(this.publicClient, { sender: this.safeAccount.address, entryPoint: this.entryPoint });
     this.smartAccountClient = createSmartAccountClient({
-        account: this.safeAccount,
-        chain: sepolia,
-        transport: http(this.bundlerUrl),
-        sponsorUserOperation: this.paymasterClient.sponsorUserOperation,
-      })
-        .extend(bundlerActions)
-        .extend(pimlicoBundlerActions);
+      account: this.safeAccount,
+      chain: sepolia,
+      transport: http(this.bundlerUrl),
+      sponsorUserOperation: this.paymasterClient.sponsorUserOperation,
+    })
+      .extend(bundlerActions)
+      .extend(pimlicoBundlerActions);
   }
 
   async getCallData({ account, startTime, endTime, hash }) {
@@ -124,6 +127,19 @@ class Pimlico {
       entryPoint: this.entryPoint,
     });
     this.waitForUserOperationReceipt({ txnHash }).then(console.log);
+    return txnHash;
+  }
+
+  async getAccount({ signature, message }) {
+    const data = ethers.hashMessage(message);
+    const account = ethers.recoverAddress(data, signature);
+    return account;
+  }
+
+  async signedMint({ signature, message, startTime, endTime, hash }) {
+    const account = await this.getAccount({ signature, message });
+    const txnHash = this.mint({ account, startTime, endTime, hash });
+    console.log('txnHash genrated: ', txnHash);
     return txnHash;
   }
 }
