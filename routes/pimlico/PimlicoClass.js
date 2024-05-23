@@ -138,9 +138,9 @@ class Pimlico {
 
   async signedMint({ signature, message, startTime, endTime, hash }) {
     const account = await this.getAccount({ signature, message });
-    const txnHash = this.mint({ account, startTime, endTime, hash });
-    console.log('txnHash genrated: ', txnHash);
-    return txnHash;
+    const userOpHash = this.mint({ account, startTime, endTime, hash });
+    console.log('userOpHash genrated: ', userOpHash);
+    return userOpHash;
   }
 }
 
