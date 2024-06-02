@@ -5,7 +5,7 @@ const router = express.Router();
 // const auth = require('../middleware/auth');
 const PIMLICO = require("./pimlico");
 
-router.get("/", async function (req, res, next) {
+router.post("/", async function (req, res, next) {
   const { account, startTime, endTime, hash } = req.body;
   const response = await PIMLICO.mint({
     account,
