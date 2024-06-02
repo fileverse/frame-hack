@@ -1,12 +1,27 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
 // const heartbit = require('./heartbit');
 // const recover = require('./recover');
 // const auth = require('../middleware/auth');
-const PIMLICO = require('./pimlico');
+const PIMLICO = require("./pimlico");
 
-router.get('/', function (req, res, next) {
-  res.send('relayer service');
+router.get("/", async function (req, res, next) {
+  const { account, startTime, endTime, hash } = req.body;
+  const response = await PIMLICO.mint({
+    account,
+    startTime,
+    endTime,
+    hash,
+    data: "0x00",
+  }).catch((error) => {
+    console.log(error);
+    return { success: false, message: "txn failed" };
+  });
+  if (response.hash) {
+    res.send({ success: true, txnHash: response.hash });
+  } else {
+    res.send({ success: false, message: response.message });
+  }
 });
 
 // router.post('/', auth, async function (req, res, next) {
@@ -59,17 +74,17 @@ router.get('/', function (req, res, next) {
 //   }
 // });
 
-router.post('/address-mint', async function (req, res, next) {
+router.post("/address-mint", async function (req, res, next) {
   const { account, startTime, endTime, hash } = req.body;
   const response = await PIMLICO.mint({
     account,
     startTime,
     endTime,
     hash,
-    data: '0x00',
+    data: "0x00",
   }).catch((error) => {
     console.log(error);
-    return { success: false, message: 'txn failed' };
+    return { success: false, message: "txn failed" };
   });
   if (response.hash) {
     res.send({ success: true, txnHash: response.hash });
@@ -78,7 +93,7 @@ router.post('/address-mint', async function (req, res, next) {
   }
 });
 
-router.post('/signed-mint', async function (req, res) {
+router.post("/signed-mint", async function (req, res) {
   const { message, signature, startTime, endTime, hash } = req.body;
 
   const response = await PIMLICO.signedMint({
@@ -87,17 +102,20 @@ router.post('/signed-mint', async function (req, res) {
     startTime,
     endTime,
     hash,
-    data: '0x00',
+    data: "0x00",
   }).catch((error) => {
     console.log(error);
-    return { success: false, message: 'txn failed' };
+    return { success: false, message: "txn failed" };
   });
   if (response.success) {
-    res.send({ success: true, txnHash: response.hash, userOpHash: response.userOpHash });
+    res.send({
+      success: true,
+      txnHash: response.hash,
+      userOpHash: response.userOpHash,
+    });
   } else {
     res.send({ success: false, message: response.message });
   }
 });
-
 
 module.exports = router;
