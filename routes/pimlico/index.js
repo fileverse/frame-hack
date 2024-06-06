@@ -18,4 +18,13 @@ async function signedMint({ signature, message, startTime, endTime, hash }) {
 
 }
 
-module.exports = { mint, signedMint };
+async function getUserOperationReceipt({ hash }) {
+  const receipt = await pimlico.getUserOperationReceipt({ hash });
+  return {
+    success: receipt?.success || false,
+    receipt: receipt?.receipt || {},
+    error: receipt ? "" : "receipt not generated",
+  }
+}
+
+module.exports = { mint, signedMint, getUserOperationReceipt };
