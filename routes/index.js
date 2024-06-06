@@ -129,7 +129,11 @@ router.get("/receipt/:hash", async function (req, res) {
   BigInt.prototype.toJSON = function () {
     return { $bigint: this.toString() };
   };
-  res.send({ success: response.success, receipt: response.receipt, error: response.error });
+  res.send({
+    success: response.success,
+    transactionHash: response.receipt?.transactionHash,
+    error: response.error
+  });
 });
 
 module.exports = router;
