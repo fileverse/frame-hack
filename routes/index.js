@@ -118,4 +118,22 @@ router.post("/signed-mint", async function (req, res) {
   }
 });
 
+router.get("/receipt/:hash", async function (req, res) {
+  const { hash } = req.params;
+  const response = await PIMLICO.getUserOperationReceipt({ hash }).catch(
+    (error) => {
+      console.log(error);
+      res.status(500).send({ success: false, message: "hash details not found" });
+    }
+  );
+  BigInt.prototype.toJSON = function () {
+    return { $bigint: this.toString() };
+  };
+  res.send({
+    success: response.success,
+    transactionHash: response.receipt?.transactionHash,
+    error: response.error
+  });
+});
+
 module.exports = router;

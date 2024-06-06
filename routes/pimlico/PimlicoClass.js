@@ -97,8 +97,15 @@ class Pimlico {
   }
 
   async waitForUserOperationReceipt({ txnHash }) {
-    console.log('waitForUserOperationReceipt :', txnHash);
     return await this.smartAccountClient.waitForUserOperationReceipt({ hash: txnHash });
+  }
+
+  async getUserOperationReceipt({ hash }) {
+    if (this.hasAgent === false) {
+      await this.setup();
+    }
+    const receipt = await this.bundlerClient.getUserOperationReceipt({ hash: hash });
+    return receipt;
   }
 
   async mint({ account, startTime, endTime, hash }) {
@@ -142,7 +149,6 @@ class Pimlico {
   async signedMint({ signature, message, startTime, endTime, hash }) {
     const account = await this.getAccount({ signature, message });
     const userOpHash = this.mint({ account, startTime, endTime, hash });
-    console.log('userOpHash genrated: ', userOpHash);
     return userOpHash;
   }
 }
