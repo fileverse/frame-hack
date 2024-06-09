@@ -5,10 +5,17 @@ const pimlico = new PimlicoClass({
   rpcUrl: process.env.NETWORK_RPC_URL,
 });
 
-async function main({ account, startTime, endTime, hash }) {
+async function mint({ account, startTime, endTime, hash }) {
   const txnHash = await pimlico.mint({ account, startTime, endTime, hash });
   console.log('txnHash: ', txnHash);
   return { success: true, hash: txnHash };
 }
 
-module.exports = main;
+async function signedMint({ signature, message, startTime, endTime, hash }) {
+  const userOpHash = await pimlico.signedMint({ signature, message, startTime, endTime, hash });
+  console.log('signedMint got userOpHash: ', userOpHash);
+  return { success: true, hash: "", userOpHash };
+
+}
+
+module.exports = { mint, signedMint };

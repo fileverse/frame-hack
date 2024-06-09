@@ -3,6 +3,8 @@ const { toBytes, toHex } = require("viem");
 const { generatePrivateKey } = require("viem/accounts");
 const abi = require("./abi.json");
 
+const { ethers } = require('ethers');
+
 const {
   createPimlicoPaymasterClient,
   createPimlicoBundlerClient,
@@ -15,21 +17,25 @@ const {
   getAccountNonce,
 } = require("permissionless");
 const { pimlicoBundlerActions } = require("permissionless/actions/pimlico");
-const { sepolia, base } = require("viem/chains");
+const { sepolia, base, gnosis } = require("viem/chains");
 
 const supportedChains = {
   SEPOLIA: "sepolia",
   BASE: "base",
+  GNOSIS: "gnosis",
 };
 
 function resolveViemChainInstance(chain) {
-  if (chain === supportedChains.SEPOLIA) {
-    return sepolia;
+  switch (chain) {
+    case supportedChains.SEPOLIA:
+      return sepolia;
+    case supportedChains.BASE:
+      return base;
+    case supportedChains.GNOSIS:
+      return gnosis;
+    default:
+      return null;
   }
-  if (chain === supportedChains.BASE) {
-    return base;
-  }
-  return null;
 }
 
 class Pimlico {
@@ -40,7 +46,7 @@ class Pimlico {
     this.hasAgent = false;
     this.chain = resolveViemChainInstance(chain);
     if (!this.chain) {
-      throw new Error("unsupported chains: should be either base or sepolia");
+      throw new Error("unsupported chains: should be either base, gnosis or sepolia");
     }
     this.paymasterUrl = `https://api.pimlico.io/v2/${chain}/rpc?apikey=${apiKey}`;
     this.bundlerUrl = `https://api.pimlico.io/v1/${chain}/rpc?apikey=${apiKey}`;
@@ -64,17 +70,17 @@ class Pimlico {
       privateKey: process.env.PRIVATE_KEY,
       safeVersion: "1.4.1",
       entryPoint: this.entryPoint, // global entrypoint
-      address: process.env.PIMLICO_ADDRESS,
     });
+    console.log('safeAccount addrress:', this.safeAccount.address);
     this.nonce = await getAccountNonce(this.publicClient, { sender: this.safeAccount.address, entryPoint: this.entryPoint });
     this.smartAccountClient = createSmartAccountClient({
-        account: this.safeAccount,
-        chain: sepolia,
-        transport: http(this.bundlerUrl),
-        sponsorUserOperation: this.paymasterClient.sponsorUserOperation,
-      })
-        .extend(bundlerActions)
-        .extend(pimlicoBundlerActions);
+      account: this.safeAccount,
+      chain: this.chain,
+      transport: http(this.bundlerUrl),
+      sponsorUserOperation: this.paymasterClient.sponsorUserOperation,
+    })
+      .extend(bundlerActions)
+      .extend(pimlicoBundlerActions);
   }
 
   async getCallData({ account, startTime, endTime, hash }) {
@@ -125,6 +131,19 @@ class Pimlico {
     });
     this.waitForUserOperationReceipt({ txnHash }).then(console.log);
     return txnHash;
+  }
+
+  async getAccount({ signature, message }) {
+    const data = ethers.hashMessage(message);
+    const account = ethers.recoverAddress(data, signature);
+    return account;
+  }
+
+  async signedMint({ signature, message, startTime, endTime, hash }) {
+    const account = await this.getAccount({ signature, message });
+    const userOpHash = this.mint({ account, startTime, endTime, hash });
+    console.log('userOpHash genrated: ', userOpHash);
+    return userOpHash;
   }
 }
 
